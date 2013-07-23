@@ -178,7 +178,7 @@ if(!$respuesta) $respuesta="no cacho eso...";
 
 
 echo("User : $input_orig<br>Elvex : $respuesta");
-consulta("insert into conversa (quien,frase) values('Elvex','$respuesta')");
+if($respuesta!="") consulta("insert into conversa (quien,frase) values('Elvex','$respuesta')");
 }
 
 ?>
