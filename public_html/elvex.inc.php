@@ -1,7 +1,7 @@
 <?php
 function conecta(){
-$link = mysql_connect("localhost", "root", "") or die ('error! '.mysql_error());
-mysql_select_db("musicos",$link);
+$link = mysql_connect("localhost", "user", "password") or die ('error! '.mysql_error());
+mysql_select_db("elvex",$link);
 return ($link);
 }
 
