@@ -5,8 +5,68 @@
     
 <?php
 include("elvex.inc.php");
+
+function responde_bd($input,$no){
+    
+    //sacar preguntas quien, como, donde, etc. el resultado, a $input2
+    
+    $input=rtrim($input,"?");
+    $result=consulta("select * from preguntas order by id desc");
+    $condiciones="";
+    $input2=$input;
+    while($myrow=mysql_fetch_array($result)){
+        $input2=quita($input2,$myrow[pregunta]);
+        $input2_orig=$input2;
+    }
+    
+    $respuesta="";
+
+    $input2=arregla($input2);           //generar consulta con las palabras obtenidas
+    //echo "input2=$input2<br>";
+    $input2_palabras_array=explode(" ",$input2);
+    foreach($input2_palabras_array as $palabra){
+        $condiciones.="concat(' ',frase) regexp ' $palabra ' and ";
+    }
+    $condiciones.="TRUE";
+    //echo $condiciones;
+    $existe_respuesta=FALSE;
+    $result=consulta("select * from verdades where $condiciones order by rand() limit 4");
+    while($myrow=mysql_fetch_array($result)){
+        $existe_respuesta=TRUE;
+        $respuesta=$myrow[frase];
+        $razon_id=$myrow[razon_id];
+        if($razon_id!=0){
+            $rrow=row("select * from verdades where id=$razon_id");
+            $razon=$rrow[frase];
+        }
+        $respuesta2=$respuesta;
+        //echo $respuesta;
+        foreach($input2_palabras_array as $palabra){
+            $respuesta2=arregla(quita(" ".$respuesta2." "," ".$palabra." "));
+            
+        }
+    $respuesta3.=$respuesta2.",";
+    if($respuesta3==","){
+            if($no&&$existe_respuesta) {$respuesta3=$no.".$razon.";echo("here");}
+                else
+                {$respuesta3="Si,asi es. $razon";
+                    
+                }
+        };
+    }            
+ $respuesta=rtrim($respuesta3,",");
+ //if($no&&!$respuesta) $respuesta=$no." $respuesta";
+ 
+ if(($respuesta=="no")&&($existe_respuesta)) $respuesta="No, $razon ";
+ return($respuesta);
+}
+
+
 $input=$_POST["input"];
 $input_orig=$input;
+
+
+
 
 //Mostrar conversa
 
@@ -70,69 +130,26 @@ if($input){
     
     //contestar "inteligentemente" segun BD
     
-    if(!$respuesta){           //sacar preguntas quien, como, donde, etc. el resultado, a $input2
-        $input=rtrim($input,"?");
-        $result=consulta("select * from preguntas order by id desc");
-        $condiciones="";
+    if(!$respuesta){ $respuesta=responde_bd($input,"");}
+    
+    
+    if(!$respuesta){
         $input2=$input;
-        while($myrow=mysql_fetch_array($result)){
-            $input2=quita($input2,$myrow[pregunta]);
-            $input2_orig=$input2;
-        }
-        
-        $respuesta="";
-        
-    /*    
         if(quita(" ".$input2." "," no ")!=$input2&&substr($input2,-3)!=" no"){
-            // Revisar negaciones y armar la respuesta en caso que lo que dice uno sea falso
-            $input_con_no=$input2;
-            $input2=quita(" ".$input2." "," no");
-            $no="No, $input2";
-            //$respuesta.="$no";
-        }
-        
-      */
-        
-       $input2=arregla($input2);           //generar consulta con las palabras obtenidas
-        //echo "input2=$input2<br>";
-        $input2_palabras_array=explode(" ",$input2);
-        foreach($input2_palabras_array as $palabra){
-            $condiciones.="concat(' ',frase) regexp ' $palabra ' and ";
-        }
-        $condiciones.="TRUE";
-        //echo $condiciones;
-        $existe_respuesta=FALSE;
-        $result=consulta("select * from verdades where $condiciones order by rand() limit 4");
-        while($myrow=mysql_fetch_array($result)){
-            $existe_respuesta=TRUE;
-            $respuesta=$myrow[frase];
-            $razon_id=$myrow[razon_id];
-            if($razon_id!=0){
-                $rrow=row("select * from verdades where id=$razon_id");
-                $razon=$rrow[frase];
-            }
-            $respuesta2=$respuesta;
-            //echo $respuesta;
-            foreach($input2_palabras_array as $palabra){
-                $respuesta2=arregla(quita(" ".$respuesta2." "," ".$palabra." "));
-                
-            }
-        $respuesta3.=$respuesta2.",";
-        if($respuesta3==","){
-                if($no&&$existe_respuesta) {$respuesta3=$no.".$razon.";echo("here");}
-                    else
-                    {$respuesta3="Si,asi es. $razon";
-                        
-                    }
-            };
-        }            
-     $respuesta=rtrim($respuesta3,",");
-     //if($no&&!$respuesta) $respuesta=$no." $respuesta";
-     
-     if(($respuesta=="no")&&($existe_respuesta)) $respuesta="No, $razon ";
-     
+        // Revisar negaciones y armar la respuesta en caso que lo que dice uno sea falso
+        $input_con_no=$input2;
+        $input2=quita(" ".$input2." "," no");
+        $no="No, $input2";
+        //$respuesta.="$no";
+        $respuesta=responde_bd($input2,$no);}
     }
+        
 
+    
+  
+    
+    
+    
     //No tengo respuesta, pero puedo tener preguntas
    
 if(!$respuesta){
