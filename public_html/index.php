@@ -19,6 +19,8 @@ if($input!="") consulta("insert into conversa (quien,frase) values('User','$inpu
 
 //Procesar entrada
 
+$input=strtolower($input);
+
 if($input=="medita"){
     piensatodo();
     $respuesta="Ommm";
@@ -80,24 +82,27 @@ if($input){
         
         $respuesta="";
         
-        
-        if(quita(" ".$input2." "," no ")!=($input2)){   // Revisar negaciones y armar la respuesta en caso que lo que dice uno sea falso
+    /*    
+        if(quita(" ".$input2." "," no ")!=$input2&&substr($input2,-3)!=" no"){
+            // Revisar negaciones y armar la respuesta en caso que lo que dice uno sea falso
+            $input_con_no=$input2;
             $input2=quita(" ".$input2." "," no");
             $no="No, $input2";
             //$respuesta.="$no";
         }
         
-       
-        $input2=arregla($input2);           //generar consulta con las palabras obtenidas
+      */
+        
+       $input2=arregla($input2);           //generar consulta con las palabras obtenidas
         //echo "input2=$input2<br>";
         $input2_palabras_array=explode(" ",$input2);
         foreach($input2_palabras_array as $palabra){
-            $condiciones.="frase regexp '$palabra ' and ";
+            $condiciones.="concat(' ',frase) regexp ' $palabra ' and ";
         }
         $condiciones.="TRUE";
         //echo $condiciones;
         $existe_respuesta=FALSE;
-        $result=consulta("select * from verdades where $condiciones order by rand() limit 2");
+        $result=consulta("select * from verdades where $condiciones order by rand() limit 4");
         while($myrow=mysql_fetch_array($result)){
             $existe_respuesta=TRUE;
             $respuesta=$myrow[frase];
@@ -107,6 +112,7 @@ if($input){
                 $razon=$rrow[frase];
             }
             $respuesta2=$respuesta;
+            //echo $respuesta;
             foreach($input2_palabras_array as $palabra){
                 $respuesta2=arregla(quita(" ".$respuesta2." "," ".$palabra." "));
                 
