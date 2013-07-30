@@ -206,6 +206,6 @@ if($respuesta!="")consulta("insert into conversa (quien,frase) values('Elvex','$
 
 ?>
 <form action="index.php" method="post">
-<input type="text" name="input" id="input" autocomplete="off">
+<input style="width:350px; height: 50px;" type="text" name="input" id="input" autocomplete="off">
 </form>
 </body></html>
